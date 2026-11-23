@@ -1,5 +1,5 @@
 // =====================================================================
-// CalendarioLMU - logica.js (versión unificada Web / Netlify + Electron)
+// CalendarioLMU - logica.js (Detección automática de cualquier .csv)
 // =====================================================================
 
 const defaultCSV = `Horario,Categoría,Evento,Autos,Pista
@@ -277,6 +277,41 @@ function mostrarCarreras() {
 }
 
 // ---------------------------------------------------------------------
+// DETECCIÓN AUTOMÁTICA DE CUALQUIER .CSV EN EL REPOSITORIO
+// ---------------------------------------------------------------------
+async function buscarYDescargarCSV() {
+    // ⚠️ COMPLETÁ ESTOS DOS DATOS CON TU USUARIO Y REPO DE GITHUB:
+    const GITHUB_USER = 'DarthGaston';
+    const GITHUB_REPO = 'Calendario-lmu';
+
+    try {
+        // Consulta la lista de archivos del repositorio
+        const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents?t=${Date.now()}`;
+        const resApi = await fetch(apiUrl);
+        if (!resApi.ok) return null;
+
+        const archivos = await resApi.json();
+        if (!Array.isArray(archivos)) return null;
+
+        // Busca el primer archivo que termine en .csv (sin importar el nombre)
+        const archivoCSV = archivos.find(f => f.type === 'file' && f.name.toLowerCase().endsWith('.csv'));
+        if (!archivoCSV) return null;
+
+        // Descarga el contenido usando el nombre real encontrado (en Netlify o desde raw.githubusercontent)
+        const resCsv = await fetch(`./${encodeURIComponent(archivoCSV.name)}?t=${Date.now()}`);
+        if (resCsv.ok) {
+            const texto = await resCsv.text();
+            if (texto && texto.trim().length > 0 && !texto.trim().startsWith('<!DOCTYPE')) {
+                return { nombre: archivoCSV.name, contenido: texto };
+            }
+        }
+    } catch (e) {
+        console.warn('No se pudo consultar la lista de archivos de GitHub:', e);
+    }
+    return null;
+}
+
+// ---------------------------------------------------------------------
 // INICIO
 // ---------------------------------------------------------------------
 async function initApp() {
@@ -292,29 +327,20 @@ async function initApp() {
 
     await store.init();
 
-    // 1. Descargar automáticamente el CSV alojado en Netlify
-    const archivoServidor = 'calendario_carreras_lmu_24hs.csv';
-    let cargoDesdeServidor = false;
+    // 1. Buscar automáticamente cualquier archivo .csv subido al repositorio
+    const csvRemoto = await buscarYDescargarCSV();
 
-    try {
-        const response = await fetch(`./${archivoServidor}?t=${Date.now()}`);
-        if (response.ok) {
-            const textoCSV = await response.text();
-            if (textoCSV && textoCSV.trim().length > 0 && !textoCSV.trim().startsWith('<!DOCTYPE')) {
-                currentCSVData = textoCSV;
-                cargoDesdeServidor = true;
-                if (fileNameDisplay) {
-                    fileNameDisplay.textContent = archivoServidor;
-                    fileNameDisplay.title = archivoServidor;
-                }
-            }
+    if (csvRemoto) {
+        currentCSVData = csvRemoto.contenido;
+        if (fileNameDisplay) {
+            fileNameDisplay.textContent = csvRemoto.nombre;
+            fileNameDisplay.title = csvRemoto.nombre;
         }
-    } catch (e) {
-        console.warn('No se encontró CSV en servidor, usando respaldo local.', e);
-    }
-
-    // 2. Respaldo local (si se abre en Electron o falla la red)
-    if (!cargoDesdeServidor) {
+        // Actualizar también la caché local con el archivo nuevo
+        store.set(KEY_CSV, csvRemoto.contenido);
+        store.set(KEY_NAME, csvRemoto.nombre);
+    } else {
+        // 2. Respaldo local (si se abre en Electron o falla la red)
         const localData = store.get(KEY_CSV);
         const localName = store.get(KEY_NAME);
         if (localData && localName) {
