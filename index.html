@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario de Carreras SimRacing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #f3f4f6; /* gray-100 */
+        }
+        /* Custom scrollbar for text area */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #374151; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6b7280; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-4 md:p-8">
+
+    <header class="mb-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">
+                Calendario LMU
+            </h1>
+            <p class="text-gray-400 mt-2">Basado en el horario de tu sistema</p>
+        </div>
+        <div class="bg-gray-800 border border-gray-700 rounded-xl px-6 py-3 shadow-lg flex items-center gap-3">
+            <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span id="reloj" class="text-2xl font-mono font-bold tracking-wider text-white">00:00:00</span>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col gap-6">
+        
+        <!-- Panel Superior: Controles (Archivo y Filtros) -->
+        <section class="flex flex-col xl:flex-row gap-6 xl:items-center justify-between bg-gray-800 p-4 md:p-5 rounded-2xl border border-gray-700 shadow-lg">
+            
+            <!-- Módulo Archivo Activo -->
+            <div class="flex items-center gap-4 flex-wrap">
+                <label for="csvFileInput" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl cursor-pointer transition-all border border-blue-500 shadow-md hover:shadow-blue-500/20 active:scale-95">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    Cargar archivo .csv
+                    <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+                </label>
+                
+                <div class="flex flex-col border-l border-gray-600 pl-4">
+                    <span class="text-xs text-gray-400 uppercase tracking-widest font-bold">Calendario Activo:</span>
+                    <span id="fileNameDisplay" class="text-emerald-400 font-medium text-sm md:text-base truncate max-w-[200px] md:max-w-md" title="Calendario por defecto (Ejemplo)">Calendario por defecto (Ejemplo)</span>
+                </div>
+            </div>
+
+            <!-- Separador solo visible en pantallas extra grandes -->
+            <div class="hidden xl:block w-px h-12 bg-gray-700"></div>
+
+            <!-- Módulo Filtro Categorías -->
+            <div class="flex flex-col md:flex-row md:items-center gap-3 flex-1 xl:justify-end">
+                <div class="text-gray-300 font-semibold text-sm flex items-center gap-2 whitespace-nowrap">
+                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                    Filtros:
+                </div>
+                <div id="filtroCategoriaContainer" class="flex flex-wrap gap-2">
+                    <!-- Los checkboxes se generarán aquí con JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Panel de Resultados (Ocupa todo el ancho) -->
+        <section class="flex-1 mt-2">
+            <div id="carrerasContainer" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                <!-- Las tarjetas de carreras se generarán aquí con JavaScript -->
+            </div>
+            
+            <!-- Mensaje si no hay carreras -->
+            <div id="noCarrerasMsg" class="hidden flex-col items-center justify-center bg-gray-800 border border-gray-700 rounded-2xl p-10 text-center shadow-xl">
+                <svg class="w-16 h-16 text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4M8 16l-4-4 4-4"></path></svg>
+                <h3 class="text-xl font-medium text-gray-300">No hay carreras programadas próximamente.</h3>
+                <p class="text-gray-500 mt-2">Comprueba los horarios en tu CSV o relájate hasta el próximo evento.</p>
+            </div>
+        </section>
+
+    </main>
+
+	<script src="logica.js"></script>
+    
+</body>
+</html>
+
